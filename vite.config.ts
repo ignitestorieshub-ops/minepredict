@@ -13,7 +13,7 @@ export default defineConfig(({ mode }) => ({
     },
   },
   plugins: [react(), mode === "development" && componentTagger()].filter(Boolean),
-  base: '/minepredict/'
+  base: '/minepredict/',
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
