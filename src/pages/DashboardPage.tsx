@@ -8,24 +8,48 @@ import { PredictorTool } from "@/components/PredictorTool";
 import { SubscriptionCards } from "@/components/SubscriptionCards";
 import { CountdownTimer, FakeStats, TestimonialCarousel } from "@/components/FakeElements";
 import { Button } from "@/components/ui/button";
-import { Pickaxe, Crown, BarChart3, CreditCard, MessageCircle, LogOut, Shield } from "lucide-react";
+import { Pickaxe, Crown, CreditCard, MessageCircle, LogOut, Shield } from "lucide-react";
 
 type Tab = "predictor" | "subscription" | "discord";
 
 export default function DashboardPage() {
   const [tab, setTab] = useState<Tab>("predictor");
   const [username, setUsername] = useState("");
-  const [tier, setTier] = useState("FREE");
+  const [tier, setTier] = useState("none");
+  const [role, setRole] = useState("user");
   const navigate = useNavigate();
 
   useEffect(() => {
-    supabase.auth.getUser().then(({ data }) => {
-      if (!data.user) {
+    const loadProfile = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) { navigate("/"); return; }
+
+      setUsername(user.user_metadata?.username || "User");
+
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("subscription_tier, is_banned")
+        .eq("user_id", user.id)
+        .single();
+
+      if (profile?.is_banned) {
+        await supabase.auth.signOut();
         navigate("/");
         return;
       }
-      setUsername(data.user.user_metadata?.username || "User");
-    });
+
+      if (profile) setTier(profile.subscription_tier || "none");
+
+      const { data: roleData } = await supabase
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", user.id)
+        .single();
+
+      if (roleData) setRole(roleData.role);
+    };
+
+    loadProfile();
   }, [navigate]);
 
   const handleLogout = async () => {
@@ -34,10 +58,11 @@ export default function DashboardPage() {
   };
 
   const accuracyMap: Record<string, string> = {
-    FREE: "67%",
-    STARTER: "80%",
-    PRO: "92%",
-    LEGENDARY: "99.7%",
+    none: "—",
+    free: "67%",
+    starter: "80%",
+    pro: "92%",
+    legendary: "99.7%",
   };
 
   const navItems = [
@@ -55,10 +80,26 @@ export default function DashboardPage() {
       <header className="relative z-10 border-b border-border bg-card/60 backdrop-blur-xl">
         <div className="flex items-center justify-between px-4 py-3 max-w-7xl mx-auto">
           <h1 className="font-heading text-lg text-primary neon-text">⛏️ MINESS</h1>
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3 flex-wrap">
             <LiveCounter />
-            <span className="text-xs font-heading bg-primary/20 text-primary px-2 py-1 rounded">{tier}</span>
+            <span className={`text-xs font-heading px-2 py-1 rounded ${
+              tier === "legendary" ? "bg-secondary/20 text-secondary neon-glow-gold" :
+              tier === "pro" ? "bg-primary/20 text-primary neon-glow" :
+              "bg-muted text-muted-foreground"
+            }`}>
+              {tier.toUpperCase()}
+            </span>
             <span className="text-sm font-body text-foreground">{username}</span>
+            {(role === "owner" || role === "head_admin") && (
+              <Button size="sm" variant="ghost" onClick={() => navigate("/owner")} className="text-secondary">
+                <Crown className="w-4 h-4" />
+              </Button>
+            )}
+            {["owner", "head_admin", "admin"].includes(role) && (
+              <Button size="sm" variant="ghost" onClick={() => navigate("/admin")} className="text-primary">
+                <Shield className="w-4 h-4" />
+              </Button>
+            )}
             <Button variant="ghost" size="sm" onClick={handleLogout} className="text-muted-foreground hover:text-foreground">
               <LogOut className="w-4 h-4" />
             </Button>
@@ -91,7 +132,7 @@ export default function DashboardPage() {
 
         {/* Main */}
         <main className="flex-1 p-4 md:p-6 overflow-y-auto">
-          {tier === "FREE" && (
+          {(tier === "none" || tier === "free") && (
             <div className="mb-4 glass-panel p-3 border-accent/50 flex items-center justify-between neon-glow-pink">
               <span className="text-sm text-accent font-body">⚠️ Your current plan is limiting your winnings</span>
               <Button size="sm" onClick={() => setTab("subscription")} className="bg-accent text-accent-foreground font-heading text-xs">
@@ -108,13 +149,13 @@ export default function DashboardPage() {
           </div>
 
           {tab === "predictor" && (
-            <PredictorTool subscriptionTier={tier} accuracy={accuracyMap[tier] || "67%"} />
+            <PredictorTool subscriptionTier={tier} accuracy={accuracyMap[tier] || "—"} />
           )}
 
           {tab === "subscription" && <SubscriptionCards />}
         </main>
 
-        {/* Right sidebar - activity feed */}
+        {/* Right sidebar */}
         <aside className="w-64 border-l border-border bg-card/40 backdrop-blur-xl p-4 hidden xl:block">
           <h3 className="font-heading text-xs text-muted-foreground uppercase tracking-wider mb-3">Live Activity</h3>
           <ActivityFeed />
