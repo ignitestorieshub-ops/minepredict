@@ -133,17 +133,17 @@ export default function DashboardPage() {
         {/* Main */}
         <main className="flex-1 p-4 md:p-6 overflow-y-auto">
           {(tier === "none" || tier === "free") && (
-            <div className="mb-4 glass-panel p-3 border-accent/50 flex items-center justify-between neon-glow-pink">
-              <span className="text-sm text-accent font-body">⚠️ Your current plan is limiting your winnings</span>
-              <Button size="sm" onClick={() => setTab("subscription")} className="bg-accent text-accent-foreground font-heading text-xs">
-                UPGRADE NOW
+            <div className="mb-4 glass-panel p-3 border-accent/20 flex items-center justify-between">
+              <span className="text-sm text-muted-foreground font-body">Upgrade your plan for better predictions</span>
+              <Button size="sm" onClick={() => setTab("subscription")} className="bg-primary text-primary-foreground font-heading text-xs">
+                UPGRADE
               </Button>
             </div>
           )}
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-6">
             <div className="lg:col-span-2">
-              <CountdownTimer label="Free predictions reset in:" />
+              <CountdownTimer label="Predictions reset in:" />
             </div>
             <FakeStats />
           </div>
