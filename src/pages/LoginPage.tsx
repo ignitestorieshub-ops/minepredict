@@ -15,27 +15,79 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
+  const toEmail = (u: string) => `${u.toLowerCase().replace(/[^a-z0-9]/g, "")}@miness.app`;
+
   const handleAuth = async () => {
     if (!username.trim() || !password.trim()) {
       toast.error("Please fill in all fields");
       return;
     }
+    if (password.length < 6) {
+      toast.error("Password must be at least 6 characters");
+      return;
+    }
     setLoading(true);
-    const email = `${username.toLowerCase().replace(/[^a-z0-9]/g, "")}@miness.app`;
+    const email = toEmail(username);
 
     try {
       if (tab === "register") {
-        const { error } = await supabase.auth.signUp({
+        const { error: signUpError } = await supabase.auth.signUp({
           email,
           password,
-          options: { data: { username } },
+          options: { data: { username: username.trim() } },
         });
-        if (error) throw error;
-        toast.success("Account created! Logging in...");
+        if (signUpError) {
+          if (signUpError.message.includes("already registered")) {
+            toast.error("Username already taken");
+          } else {
+            toast.error(signUpError.message);
+          }
+          setLoading(false);
+          return;
+        }
+        toast.success("Account created!");
+        // Auto-confirm is enabled, so we can login immediately
       }
 
-      const { error } = await supabase.auth.signInWithPassword({ email, password });
-      if (error) throw error;
+      const { error: loginError } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+
+      if (loginError) {
+        if (tab === "register") {
+          // Just registered, try again after a moment
+          await new Promise((r) => setTimeout(r, 1000));
+          const { error: retryError } = await supabase.auth.signInWithPassword({
+            email,
+            password,
+          });
+          if (retryError) {
+            toast.error("Account created but login failed. Please try logging in.");
+            setTab("login");
+            setLoading(false);
+            return;
+          }
+        } else {
+          toast.error("Invalid username or password");
+          setLoading(false);
+          return;
+        }
+      }
+
+      // Check if user is banned
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("is_banned")
+        .single();
+
+      if (profile?.is_banned) {
+        await supabase.auth.signOut();
+        toast.error("⛔ Your account has been permanently suspended");
+        setLoading(false);
+        return;
+      }
+
       navigate("/dashboard");
     } catch (err: any) {
       toast.error(err.message || "Authentication failed");
