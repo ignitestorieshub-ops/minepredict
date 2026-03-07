@@ -12,10 +12,10 @@ export default defineConfig(({ mode }) => ({
     },
   },
   plugins: [react(), mode === "development" && componentTagger()].filter(Boolean),
-  base: '/minepredict/',
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
     },
-  }, 
+    dedupe: ["react", "react-dom", "react/jsx-runtime"],
+  },
 }));
