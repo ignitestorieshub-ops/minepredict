@@ -106,7 +106,7 @@ export default function LoginPage() {
           <h1 className="text-4xl md:text-5xl font-heading font-bold text-primary neon-text animate-pulse-neon inline-block px-4 py-2">
             ⛏️ MINESS PREDICTOR
           </h1>
-          <p className="text-muted-foreground mt-3 font-body text-lg">
+          <p className="text-foreground/80 mt-3 font-body text-lg">
             The #1 Mines Prediction Tool — Trusted by <span className="text-secondary font-semibold">50,000+</span> Players
           </p>
           <div className="mt-3 flex justify-center">
@@ -114,12 +114,12 @@ export default function LoginPage() {
           </div>
         </div>
 
-        <div className="glass-panel p-6 neon-glow">
-          <div className="flex mb-6 rounded-lg overflow-hidden border border-border">
+        <div className="glass-panel bg-card/95 p-6 neon-glow">
+          <div className="flex mb-6 rounded-lg overflow-hidden border border-border bg-background/70">
             <button
               onClick={() => setTab("login")}
               className={`flex-1 py-3 text-sm font-heading font-semibold transition-all ${
-                tab === "login" ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground hover:text-foreground"
+                tab === "login" ? "bg-primary text-primary-foreground" : "bg-card text-foreground/75 hover:text-foreground"
               }`}
             >
               LOGIN
@@ -127,7 +127,7 @@ export default function LoginPage() {
             <button
               onClick={() => setTab("register")}
               className={`flex-1 py-3 text-sm font-heading font-semibold transition-all ${
-                tab === "register" ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground hover:text-foreground"
+                tab === "register" ? "bg-primary text-primary-foreground" : "bg-card text-foreground/75 hover:text-foreground"
               }`}
             >
               REGISTER
@@ -136,22 +136,22 @@ export default function LoginPage() {
 
           <div className="space-y-4">
             <div>
-              <label className="text-xs font-heading text-muted-foreground uppercase tracking-wider">Username</label>
+              <label className="text-xs font-heading text-foreground/70 uppercase tracking-wider">Username</label>
               <Input
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
                 placeholder="Enter username"
-                className="mt-1 bg-input border-border focus:border-primary"
+                className="mt-1 bg-card border-border/80 text-foreground placeholder:text-foreground/45 focus:border-primary"
               />
             </div>
             <div>
-              <label className="text-xs font-heading text-muted-foreground uppercase tracking-wider">Password</label>
+              <label className="text-xs font-heading text-foreground/70 uppercase tracking-wider">Password</label>
               <Input
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="Enter password"
-                className="mt-1 bg-input border-border focus:border-primary"
+                className="mt-1 bg-card border-border/80 text-foreground placeholder:text-foreground/45 focus:border-primary"
                 onKeyDown={(e) => e.key === "Enter" && handleAuth()}
               />
             </div>
@@ -160,12 +160,12 @@ export default function LoginPage() {
               disabled={loading}
               className="w-full bg-primary text-primary-foreground font-heading font-bold text-base py-6 animate-pulse-neon hover:shadow-lg transition-all"
             >
-              {loading ? "Processing..." : tab === "login" ? "🔓 LOGIN" : "🚀 CREATE ACCOUNT"}
+              {loading ? "Processing..." : tab === "login" ? "LOGIN" : "CREATE ACCOUNT"}
             </Button>
           </div>
 
           <div className="mt-4 text-center">
-            <p className="text-xs text-muted-foreground">
+            <p className="text-xs text-foreground/70">
               ⭐⭐⭐⭐⭐ <span className="text-secondary">4.9/5</span> from 12,847 reviews
             </p>
           </div>
